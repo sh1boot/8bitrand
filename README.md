@@ -12,7 +12,7 @@ multiplies per eight bits of output, but is still slightly constrained in the
 multipliers it's able to use (risk of internal overflow).
 
 This is in contrast with a typical [linear congruential generator][lcg] which
-would typically use seven to ten 8-bit multiplies (and more additions) and to
+would typically use seven to ten 8-bit multiplies (and more additions) to
 produce about 16 bits of usable output, and maybe 16 more bits of garbage
 appended to that.
 
