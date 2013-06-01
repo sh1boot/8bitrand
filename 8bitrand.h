@@ -3,6 +3,8 @@
 
 #include <stdint.h>
 
+#define SEED_MAX 32
+
 extern void rand8_init(uint16_t a, uint8_t r, uint16_t c, uint8_t const *seed);
 extern uint8_t rand8_8bit(void);
 extern uint16_t rand16_8bit(void);

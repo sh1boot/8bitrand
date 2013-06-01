@@ -154,11 +154,10 @@ int main(int argc, char *argv[])
     uint16_t a = 0;
     uint16_t c = 1;
     uint8_t r = 0;
-    uint8_t seed[30] = { 0 };
+    uint8_t seed[SEED_MAX] = { 0 };
 
     enum { MODE_GENERATE, MODE_TEST } mode = MODE_GENERATE;
     tabptr_t const *table = NULL;
-    size_t max_r = 0;
     long tab_index = 0;
     uint8_t a_lo, a_hi;
     int optc;
@@ -168,20 +167,17 @@ int main(int argc, char *argv[])
         switch (optc)
         {
         case 'w':
-            table = wide_table;
-            max_r = sizeof(wide_table) / sizeof(*wide_table);
+            table = multiplier_table[WIDE_TABLE];
             tab_index = strtol(optarg, NULL, 0);
             break;
 
         case 'n':
-            table = narrow_table;
-            max_r = sizeof(narrow_table) / sizeof(*narrow_table);
+            table = multiplier_table[NARROW_TABLE];
             tab_index = strtol(optarg, NULL, 0);
             break;
 
         case 'u':
-            table = unsafe_table;
-            max_r = sizeof(unsafe_table) / sizeof(*unsafe_table);
+            table = multiplier_table[UNSAFE_TABLE];
             tab_index = strtol(optarg, NULL, 0);
             break;
 
@@ -233,34 +229,31 @@ int main(int argc, char *argv[])
             exit(EXIT_FAILURE);
         }
 
+    if (r < 1 || r > SEED_MAX)
+    {
+        fprintf(stderr, "Out-of-range lag value.\n");
+        exit(EXIT_FAILURE);
+    }
+
     if (a == 0)
     {
-        int choices;
-
         if (table == NULL)
         {
             fprintf(stderr, "Must choose multiplier.\n");
             exit(EXIT_FAILURE);
         }
 
-        choices = r < max_r ? table[r].len : 0;
         if (tab_index < 0)
-            tab_index += choices;
-        if ((unsigned)tab_index >= choices)
+            tab_index += table[r].len;
+        if ((unsigned)tab_index >= table[r].len)
         {
-            if (choices)
-                fprintf(stderr, "Only %d known lag-%d multipliers.\n", choices, r);
+            if (table[r].len > 0)
+                fprintf(stderr, "Only %d known lag-%d multipliers.\n", table[r].len, r);
             else
                 fprintf(stderr, "No known lag-%d multipliers.\n", r);
             exit(EXIT_FAILURE);
         }
         a = table[r].tab[tab_index];
-    }
-
-    if (r < 1 || r > sizeof(seed))
-    {
-        fprintf(stderr, "Out-of-range lag value.\n");
-        exit(EXIT_FAILURE);
     }
 
     a_lo = a & 0xff;

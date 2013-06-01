@@ -2,6 +2,12 @@
 #define TABLES_H_INCLUDED
 
 #include <stdint.h>
+#include "8bitrand.h"
+
+enum
+{
+    WIDE_TABLE, NARROW_TABLE, UNSAFE_TABLE, NUM_TABLES
+};
 
 typedef struct
 {
@@ -9,8 +15,6 @@ typedef struct
     uint16_t const *tab;
 } tabptr_t;
 
-extern const tabptr_t wide_table[32];
-extern const tabptr_t narrow_table[32];
-extern const tabptr_t unsafe_table[32];
+extern const tabptr_t multiplier_table[NUM_TABLES][SEED_MAX + 1];
 
 #endif

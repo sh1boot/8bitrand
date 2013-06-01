@@ -6,7 +6,7 @@
 
 static struct
 {
-    uint8_t state[30]; /* would normally be smaller */
+    uint8_t state[SEED_MAX]; /* would normally be smaller */
     uint16_t c;
     /* Could be folded into c if storage is tight */
     uint8_t i;
