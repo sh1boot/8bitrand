@@ -205,9 +205,7 @@ static const uint16_t small_lag_15_multipliers[] = {
 static const uint16_t unsafe_lag_1_multipliers[] = {
     0x0021, /* 0x20FF is prime */
     0x002d, /* 0x2CFF is prime */
-    0x0032, /* 0x31FF is prime */
     0x0035, /* 0x34FF is prime */
-    0x0039, /* 0x38FF is prime */
     0x003c, /* 0x3BFF is prime */
     0x003f, /* 0x3EFF is prime */
     0x0050, /* 0x4FFF is prime */
@@ -218,14 +216,11 @@ static const uint16_t unsafe_lag_1_multipliers[] = {
     0x005a, /* 0x59FF is prime */
     0x0062, /* 0x61FF is prime */
     0x0063, /* 0x62FF is prime */
-    0x0066, /* 0x65FF is prime */
     0x0069, /* 0x68FF is prime */
     0x006c, /* 0x6BFF is prime */
-    0x0071, /* 0x70FF is prime */
     0x007a, /* 0x79FF is prime */
     0x0081, /* 0x80FF is prime */
     0x0084, /* 0x83FF is prime */
-    0x0086, /* 0x85FF is prime */
     0x008a, /* 0x89FF is prime */
     0x008c, /* 0x8BFF is prime */
     0x008f, /* 0x8EFF is prime */
@@ -233,43 +228,30 @@ static const uint16_t unsafe_lag_1_multipliers[] = {
     0x00a4, /* 0xA3FF is prime */
     0x00a5, /* 0xA4FF is prime */
     0x00a7, /* 0xA6FF is prime */
-    0x00b3, /* 0xB2FF is prime */
     0x00b6, /* 0xB5FF is prime */
     0x00bd, /* 0xBCFF is prime */
-    0x00c2, /* 0xC1FF is prime */
     0x00c3, /* 0xC2FF is prime */
-    0x00c8, /* 0xC7FF is prime */
-    0x00d1, /* 0xD0FF is prime */
     0x00da, /* 0xD9FF is prime */
     0x00e3, /* 0xE2FF is prime */
     0x00e4, /* 0xE3FF is prime */
     0x00f3, /* 0xF2FF is prime */
-    0x00f8, /* 0xF7FF is prime */
     0x00f9, /* 0xF8FF is prime */
-    0x010b, /* 0x010AFF is prime */
     0x010d, /* 0x010CFF is prime */
     0x010e, /* 0x010DFF is prime */
     0x0116, /* 0x0115FF is prime */
     0x011d, /* 0x011CFF is prime */
-    0x011f, /* 0x011EFF is prime */
     0x0120, /* 0x011FFF is prime */
     0x0129, /* 0x0128FF is prime */
-    0x012b, /* 0x012AFF is prime */
     0x0131, /* 0x0130FF is prime */
     0x0135, /* 0x0134FF is prime */
     0x0140, /* 0x013FFF is prime */
     0x0149, /* 0x0148FF is prime */
-    0x014c, /* 0x014BFF is prime */
     0x014d, /* 0x014CFF is prime */
     0x0153, /* 0x0152FF is prime */
     0x015c, /* 0x015BFF is prime */
-    0x015e, /* 0x015DFF is prime */
-    0x016a, /* 0x0169FF is prime */
     0x016b, /* 0x016AFF is prime */
     0x0170, /* 0x016FFF is prime */
     0x0171, /* 0x0170FF is prime */
-    0x0174, /* 0x0173FF is prime */
-    0x017f, /* 0x017EFF is prime */
     0x0186, /* 0x0185FF is prime */
     0x018b, /* 0x018AFF is prime */
     0x0192, /* 0x0191FF is prime */
@@ -277,69 +259,51 @@ static const uint16_t unsafe_lag_1_multipliers[] = {
     0x019a, /* 0x0199FF is prime */
     0x019d, /* 0x019CFF is prime */
     0x019e, /* 0x019DFF is prime */
-    0x01a1, /* 0x01A0FF is prime */
     0x01a7, /* 0x01A6FF is prime */
     0x01a9, /* 0x01A8FF is prime */
     0x01ac, /* 0x01ABFF is prime */
     0x01b2, /* 0x01B1FF is prime */
-    0x01b5, /* 0x01B4FF is prime */
     0x01cb, /* 0x01CAFF is prime */
     0x01d1, /* 0x01D0FF is prime */
-    0x01d3, /* 0x01D2FF is prime */
-    0x01d6, /* 0x01D5FF is prime */
     0x01da, /* 0x01D9FF is prime */
     0x01e9, /* 0x01E8FF is prime */
     0x01ef, /* 0x01EEFF is prime */
     0x01f2, /* 0x01F1FF is prime */
     0x01f7, /* 0x01F6FF is prime */
     0x01f8, /* 0x01F7FF is prime */
-    0x01fd, /* 0x01FCFF is prime */
 };
 static const uint16_t unsafe_lag_2_multipliers[] = {
-    0x0002, /* 0x01FFFF is prime */
     0x002d, /* 0x2CFFFF is prime */
-    0x0032, /* 0x31FFFF is prime */
     0x003b, /* 0x3AFFFF is prime */
     0x003f, /* 0x3EFFFF is prime */
-    0x0054, /* 0x53FFFF is prime */
     0x0075, /* 0x74FFFF is prime */
     0x0077, /* 0x76FFFF is prime */
-    0x007a, /* 0x79FFFF is prime */
     0x0081, /* 0x80FFFF is prime */
     0x0087, /* 0x86FFFF is prime */
     0x008a, /* 0x89FFFF is prime */
     0x0095, /* 0x94FFFF is prime */
-    0x009b, /* 0x9AFFFF is prime */
     0x00a2, /* 0xA1FFFF is prime */
     0x00a4, /* 0xA3FFFF is prime */
-    0x00a7, /* 0xA6FFFF is prime */
     0x00ad, /* 0xACFFFF is prime */
     0x00b6, /* 0xB5FFFF is prime */
-    0x00c5, /* 0xC4FFFF is prime */
-    0x00d1, /* 0xD0FFFF is prime */
     0x00d7, /* 0xD6FFFF is prime */
     0x00e0, /* 0xDFFFFF is prime */
     0x0101, /* 0x0100FFFF is prime */
     0x010b, /* 0x010AFFFF is prime */
     0x0110, /* 0x010FFFFF is prime */
-    0x0113, /* 0x0112FFFF is prime */
     0x011f, /* 0x011EFFFF is prime */
     0x0120, /* 0x011FFFFF is prime */
     0x012c, /* 0x012BFFFF is prime */
     0x014c, /* 0x014BFFFF is prime */
     0x0152, /* 0x0151FFFF is prime */
     0x016a, /* 0x0169FFFF is prime */
-    0x0174, /* 0x0173FFFF is prime */
     0x0176, /* 0x0175FFFF is prime */
-    0x0179, /* 0x0178FFFF is prime */
     0x017f, /* 0x017EFFFF is prime */
     0x0183, /* 0x0182FFFF is prime */
-    0x018b, /* 0x018AFFFF is prime */
     0x0192, /* 0x0191FFFF is prime */
     0x0194, /* 0x0193FFFF is prime */
     0x0198, /* 0x0197FFFF is prime */
     0x019e, /* 0x019DFFFF is prime */
-    0x01ac, /* 0x01ABFFFF is prime */
     0x01ad, /* 0x01ACFFFF is prime */
     0x01b5, /* 0x01B4FFFF is prime */
     0x01d1, /* 0x01D0FFFF is prime */
@@ -352,69 +316,39 @@ static const uint16_t unsafe_lag_2_multipliers[] = {
 static const uint16_t unsafe_lag_3_multipliers[] = {
     0x0027, /* 0x26FFFFFF is prime */
     0x002c, /* 0x2BFFFFFF is prime */
-    0x0053, /* 0x52FFFFFF is prime */
-    0x0059, /* 0x58FFFFFF is prime */
     0x005d, /* 0x5CFFFFFF is prime */
-    0x006b, /* 0x6AFFFFFF is prime */
     0x0072, /* 0x71FFFFFF is prime */
     0x0075, /* 0x74FFFFFF is prime */
-    0x007a, /* 0x79FFFFFF is prime */
-    0x0080, /* 0x7FFFFFFF is prime */
     0x0087, /* 0x86FFFFFF is prime */
     0x009f, /* 0x9EFFFFFF is prime */
     0x00a8, /* 0xA7FFFFFF is prime */
-    0x00b1, /* 0xB0FFFFFF is prime */
     0x00bd, /* 0xBCFFFFFF is prime */
     0x00c6, /* 0xC5FFFFFF is prime */
     0x00d2, /* 0xD1FFFFFF is prime */
-    0x00e0, /* 0xDFFFFFFF is prime */
-    0x00e9, /* 0xE8FFFFFF is prime */
     0x00f3, /* 0xF2FFFFFF is prime */
-    0x00fe, /* 0xFDFFFFFF is prime */
     0x00ff, /* 0xFEFFFFFF is prime */
-    0x0101, /* 0x0100FFFFFF is prime */
-    0x010d, /* 0x010CFFFFFF is prime */
     0x0126, /* 0x0125FFFFFF is prime */
     0x0129, /* 0x0128FFFFFF is prime */
     0x012f, /* 0x012EFFFFFF is prime */
-    0x0134, /* 0x0133FFFFFF is prime */
     0x0147, /* 0x0146FFFFFF is prime */
-    0x014c, /* 0x014BFFFFFF is prime */
     0x0156, /* 0x0155FFFFFF is prime */
-    0x015b, /* 0x015AFFFFFF is prime */
     0x0162, /* 0x0161FFFFFF is prime */
-    0x017c, /* 0x017BFFFFFF is prime */
-    0x018e, /* 0x018DFFFFFF is prime */
     0x018f, /* 0x018EFFFFFF is prime */
-    0x019d, /* 0x019CFFFFFF is prime */
-    0x01a3, /* 0x01A2FFFFFF is prime */
     0x01b0, /* 0x01AFFFFFFF is prime */
-    0x01b5, /* 0x01B4FFFFFF is prime */
     0x01bc, /* 0x01BBFFFFFF is prime */
     0x01c2, /* 0x01C1FFFFFF is prime */
-    0x01c7, /* 0x01C6FFFFFF is prime */
-    0x01ca, /* 0x01C9FFFFFF is prime */
     0x01cb, /* 0x01CAFFFFFF is prime */
     0x01da, /* 0x01D9FFFFFF is prime */
-    0x01f1, /* 0x01F0FFFFFF is prime */
-    0x01f7, /* 0x01F6FFFFFF is prime */
 };
 static const uint16_t unsafe_lag_4_multipliers[] = {
     0x0039, /* 0x38FFFFFFFF is prime */
-    0x003e, /* 0x3DFFFFFFFF is prime */
     0x003f, /* 0x3EFFFFFFFF is prime */
     0x0057, /* 0x56FFFFFFFF is prime */
-    0x005f, /* 0x5EFFFFFFFF is prime */
-    0x0062, /* 0x61FFFFFFFF is prime */
     0x0069, /* 0x68FFFFFFFF is prime */
-    0x006e, /* 0x6DFFFFFFFF is prime */
     0x008f, /* 0x8EFFFFFFFF is prime */
     0x00a7, /* 0xA6FFFFFFFF is prime */
     0x00ad, /* 0xACFFFFFFFF is prime */
     0x00c0, /* 0xBFFFFFFFFF is prime */
-    0x00c8, /* 0xC7FFFFFFFF is prime */
-    0x00e3, /* 0xE2FFFFFFFF is prime */
-    0x00f8, /* 0xF7FFFFFFFF is prime */
     0x0108, /* 0x0107FFFFFFFF is prime */
     0x0110, /* 0x010FFFFFFFFF is prime */
     0x0126, /* 0x0125FFFFFFFF is prime */
@@ -423,8 +357,6 @@ static const uint16_t unsafe_lag_4_multipliers[] = {
     0x013a, /* 0x0139FFFFFFFF is prime */
     0x0149, /* 0x0148FFFFFFFF is prime */
     0x017a, /* 0x0179FFFFFFFF is prime */
-    0x01a9, /* 0x01A8FFFFFFFF is prime */
-    0x01cb, /* 0x01CAFFFFFFFF is prime */
     0x01e3, /* 0x01E2FFFFFFFF is prime */
     0x01e9, /* 0x01E8FFFFFFFF is prime */
 };
