@@ -6,6 +6,7 @@
 
 #include "8bitrand.h"
 #include "tables.h"
+#include "examples.h"
 
 static uint32_t ref_state[8];
 static uint16_t ref_a;
@@ -145,8 +146,10 @@ static void usage(void)
            "8bitrand -n <i> [-r <r>] [-s <xxx>] [-c <c>]  narrow multiply\n"
            "8bitrand -u <i> [-r <r>] [-s <xxx>] [-c <c>]  narrow multiply (unsafe primes)\n"
            "8bitrand -a <a> [-r <r>] [-s <xxx>] [-c <c>]  user-specified multiply\n"
+           "8bitrand -e <i>          [-s <xxx>] [-c <c>]  example implementation\n"
            "\t-{w|n|u} <i> index of known-good multiplier to use\n"
            "\t-a <a> multiplier to use\n"
+           "\t-e <i> index of example implementation to use\n"
            "\t-r <r> generator lag\n"
            "\t-s <xxx> hexadecimal starting seed in hexadecimal\n"
            "\t-c <c> hexadecimal starting carry\n");
@@ -159,6 +162,8 @@ int main(int argc, char *argv[])
     uint16_t c = 1;
     uint8_t r = 0;
     uint8_t seed[SEED_MAX] = { 0 };
+    uint8_t seedlen = 0;
+    example_ptr_t *impl = NULL;
     uint16_t (*genfn)(void);
 
     enum { MODE_GENERATE, MODE_TEST } mode = MODE_GENERATE;
@@ -168,9 +173,22 @@ int main(int argc, char *argv[])
     int optc;
     int i;
 
-    while ((optc = getopt(argc, argv, "w:n:u:a:r:s:c:gth")) != -1)
+    while ((optc = getopt(argc, argv, "e:w:n:u:a:r:s:c:gth")) != -1)
         switch (optc)
         {
+        case 'e':
+            {
+                long i = strtol(optarg, NULL, 0);
+                if (i >= sizeof(examples) / sizeof(*examples))
+                {
+                    fprintf(stderr, "Only %d known example functions.\n", sizeof(examples) / sizeof(*examples));
+                    exit(EXIT_FAILURE);
+                }
+                impl = &examples[i];
+                a = impl->a;
+                r = impl->r;
+            }
+            break;
         case 'w':
             table = multiplier_table[WIDE_TABLE];
             tab_index = strtol(optarg, NULL, 0);
@@ -207,6 +225,7 @@ int main(int argc, char *argv[])
                     seed[i] = byte;
                     ptr += 2;
                 }
+                seedlen = i;
                 for ( ; i < sizeof(seed); i++)
                     seed[i] = 0;
             }
@@ -263,18 +282,29 @@ int main(int argc, char *argv[])
     a_lo = a & 0xff;
     a_hi = a >> 8;
 
-    rand8_init(a, r, c, seed);
-    switch (a_hi)
+    if (impl)
     {
-    case 0:
-        genfn = rand16_8bit;
-        break;
-    case 1:
-        genfn = rand16_9bit;
-        break;
-    default:
-        genfn = rand16_16bit;
-        break;
+        impl->seed(seed, seedlen);
+        for (i = 0; i < r; i++)
+            seed[i] = impl->x[i];
+        c = *impl->c;
+        genfn = impl->gen;
+    }
+    else
+    {
+        rand8_init(a, r, c, seed);
+        switch (a_hi)
+        {
+        case 0:
+            genfn = &rand16_8bit;
+            break;
+        case 1:
+            genfn = &rand16_9bit;
+            break;
+        default:
+            genfn = &rand16_16bit;
+            break;
+        }
     }
 
     fprintf(stderr, "b=256 a=0x%04x r=%d c=0x%04x s=0x", a, r, c);

@@ -6,7 +6,7 @@ TARGETS=8bitrand period
 
 all: $(TARGETS)
 
-8bitrand: test.o 8bitrand.o tables.o
+8bitrand: test.o 8bitrand.o tables.o examples.o
 
 period: period.o tables.o
 
