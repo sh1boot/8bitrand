@@ -7,33 +7,106 @@
 #include "8bitrand.h"
 #include "tables.h"
 
-static void generate_loop(unsigned long long size, uint8_t a_hi)
+static uint32_t ref_state[8];
+static uint16_t ref_a;
+static uint16_t ref_c;
+static uint8_t ref_r;
+
+static void ref_init(uint16_t a, uint8_t r, uint16_t c, uint8_t const *seed)
+{
+    int i;
+
+    ref_a = a;
+    ref_r = r;
+    ref_c = c;
+
+    for (i = 0; i + 3 < r; i += 4)
+        ref_state[i >> 2] = seed[i] + ((uint32_t)seed[i + 1] << 8) + ((uint32_t)seed[i + 2] << 16) + ((uint32_t)seed[i + 3] << 24);
+    if (i < r) ref_state[i >> 2] = seed[i];
+    if (i + 1 < r) ref_state[i >> 2] += (uint32_t)seed[i + 1] << 8;
+    if (i + 2 < r) ref_state[i >> 2] += (uint32_t)seed[i + 2] << 16;
+}
+
+static void ref_memtest(uint8_t const *src, int length, uint64_t count)
+{
+    int a = ref_a;
+    int c = ref_c;
+    int r = ref_r;
+    int i, j;
+
+    for (i = 0; i < length; i += r)
+    {
+        for (j = 0; j < r; j += 4)
+        {
+            uint32_t dut;
+            uint32_t x = ref_state[j >> 2];
+            uint64_t t;
+            int bits;
+
+            t = (uint64_t)x * a + c;
+
+            bits = (r - j) * 8;
+            if (bits >= 32)
+            {
+                bits = 32;
+                x = (uint32_t)t;
+
+                dut = src[0] + ((uint32_t)src[1] << 8) + ((uint32_t)src[2] << 16) + ((uint32_t)src[3] << 24);
+                src += 4;
+            }
+            else
+            {
+                x = (uint32_t)t & ~(0xffffffff << bits);
+
+                dut = *src++;
+                if (bits > 8) dut += (uint32_t)*src++ << 8;
+                if (bits > 16) dut += (uint32_t)*src++ << 16;
+            }
+
+            if (dut != x)
+            {
+                fprintf(stderr, "0x%llx: 0x%08x != 0x%08x\n", count + i+j, dut, x);
+                fprintf(stderr, "t=0x%010llx=(a=0x%04x * s[%d]=0x%08x + c=0x%04x)\n", t, a, j, ref_state[j >> 2], c);
+                exit(EXIT_FAILURE);
+            }
+
+            c= (uint32_t)(t >> bits);
+            ref_state[j >> 2] = x;
+        }
+    }
+    ref_c = c;
+}
+
+static void dut_memrand(uint8_t *dst, int length, uint16_t (*genfn)(void))
+{
+    int i;
+    uint8_t *p = dst;
+
+    for (i = 0; i < length; i += 2)
+    {
+        uint16_t x = genfn();
+        *p++ = x & 0xff;
+        *p++ = x >> 8;
+    }
+}
+
+static void generate_loop(unsigned long long size, uint16_t (*genfn)(void))
 {
     while (size > 0)
     {
         uint8_t buf[1 << 20];
         int out;
-        int i;
 
         out = sizeof(buf);
         if (out > size)
             out = size;
 
-        switch (a_hi)
-        {
-        case 0:
-            for (i = 0; i < out; i++)
-                buf[i] = rand8_8bit();
+        out = out & ~1;
+        if (out == 0)
             break;
-        case 1:
-            for (i = 0; i < out; i++)
-                buf[i] = rand8_9bit();
-            break;
-        default:
-            for (i = 0; i < out; i++)
-                buf[i] = rand8_16bit();
-            break;
-        }
+
+        dut_memrand(buf, out, genfn);
+
         out = fwrite(buf, 1, out, stdout);
         if (out < 0)
             break;
@@ -41,96 +114,28 @@ static void generate_loop(unsigned long long size, uint8_t a_hi)
     }
 }
 
-static void test_loop(unsigned long long size, uint16_t a, uint8_t r, uint16_t c, uint8_t const *seed)
+static void test_loop(unsigned long long size, uint16_t (*genfn)(void), uint16_t a, uint8_t r, uint16_t c, uint8_t const *seed)
 {
-    int a_hi = a >> 8;
-    if (a_hi > 2)
-        a_hi = 2;
+    unsigned long long count = 0;
 
-    for ( ; a_hi < 4; a_hi += 2)
+    ref_init(a, r, c, seed);
+
+    while (count < size)
     {
-        unsigned long long count = 0;
-        uint32_t state[8];
-        uint32_t carry = c;
-        int i, j;
+        uint8_t buf[1 << 20];
+        int out;
 
-        rand8_init(a, r, c, seed);
+        out = sizeof(buf);
+        if (out > count - size)
+            out = count - size;
+        out -= out % (r * 2);
+        if (out == 0)
+            break;
 
-        for (i = 0; i + 3 < r; i += 4)
-            state[i >> 2] = seed[i] + ((uint32_t)seed[i + 1] << 8) + ((uint32_t)seed[i + 2] << 16) + ((uint32_t)seed[i + 3] << 24);
-        if (i < r) state[i >> 2] = seed[i];
-        if (i + 1 < r) state[i >> 2] += (uint32_t)seed[i + 1] << 8;
-        if (i + 2 < r) state[i >> 2] += (uint32_t)seed[i + 2] << 16;
+        dut_memrand(buf, out, genfn);
+        ref_memtest(buf, out, count);
 
-        while (count < size)
-        {
-            uint8_t buf[1 << 20];
-            int out;
-
-            out = sizeof(buf);
-            if (out > count - size)
-                out = count - size;
-            out -= out % r;
-            if (out == 0)
-                break;
-
-            switch (a_hi)
-            {
-            case 0:
-                for (i = 0; i < out; i++)
-                    buf[i] = rand8_8bit();
-                break;
-            case 1:
-                for (i = 0; i < out; i++)
-                    buf[i] = rand8_9bit();
-                break;
-            default:
-                for (i = 0; i < out; i++)
-                    buf[i] = rand8_16bit();
-                break;
-            }
-
-            for (i = 0; i < out; i += r)
-            {
-                for (j = 0; j < r; j += 4) 
-                {
-                    uint32_t mem;
-                    uint32_t x = state[j >> 2];
-                    uint64_t t;
-                    int bits;
-
-                    t = (uint64_t)x * a + carry;
-
-                    bits = (r - j) * 8;
-                    if (bits >= 32)
-                    {
-                        bits = 32;
-                        x = (uint32_t)t;
-
-                        mem = buf[i+j] + ((uint32_t)buf[i+j + 1] << 8) + ((uint32_t)buf[i+j + 2] << 16) + ((uint32_t)buf[i+j + 3] << 24);
-                    }
-                    else
-                    {
-                        x = (uint32_t)t & ~(0xffffffff << bits);
-
-                        mem = buf[i+j];
-                        if (bits > 8) mem += (uint32_t)buf[i+j + 1] << 8;
-                        if (bits > 16) mem += (uint32_t)buf[i+j + 2] << 16;
-                    }
-
-                    if (mem != x)
-                    {
-                        fprintf(stderr, "0x%llx: 0x%08x != 0x%08x\n", count + i+j, mem, x);
-                        fprintf(stderr, "t=0x%010llx=(a=0x%04x * s[%d]=0x%08x + c=0x%04x)\n", t, a, j, state[j >> 2], carry);
-                        exit(EXIT_FAILURE);
-                    }
-
-                    carry = (uint32_t)(t >> bits);
-                    state[j >> 2] = x;
-                }
-            }
-            count += out;
-        }
+        count += out;
     }
 }
 
@@ -147,7 +152,6 @@ static void usage(void)
            "\t-c <c> hexadecimal starting carry\n");
 }
 
-
 int main(int argc, char *argv[])
 {
     /* generator config */
@@ -155,6 +159,7 @@ int main(int argc, char *argv[])
     uint16_t c = 1;
     uint8_t r = 0;
     uint8_t seed[SEED_MAX] = { 0 };
+    uint16_t (*genfn)(void);
 
     enum { MODE_GENERATE, MODE_TEST } mode = MODE_GENERATE;
     tabptr_t const *table = NULL;
@@ -255,9 +260,23 @@ int main(int argc, char *argv[])
         }
         a = table[r].tab[tab_index];
     }
-
     a_lo = a & 0xff;
     a_hi = a >> 8;
+
+    rand8_init(a, r, c, seed);
+    switch (a_hi)
+    {
+    case 0:
+        genfn = rand16_8bit;
+        break;
+    case 1:
+        genfn = rand16_9bit;
+        break;
+    default:
+        genfn = rand16_16bit;
+        break;
+    }
+
     fprintf(stderr, "b=256 a=0x%04x r=%d c=0x%04x s=0x", a, r, c);
     for (i = 0; i < r; i++)
         fprintf(stderr, "%02x", seed[i]);
@@ -268,8 +287,6 @@ int main(int argc, char *argv[])
         fprintf(stderr, "This multiplier could overflow internal arithmetic.\n");
         exit(EXIT_FAILURE);
     }
-
-    rand8_init(a, r, c, seed);
 
     argc -= optind;
     argv += optind;
@@ -285,7 +302,7 @@ int main(int argc, char *argv[])
             else
                 size = ~0ULL;
 
-            generate_loop(size, a_hi);
+            generate_loop(size, genfn);
         }
         break;
 
@@ -300,7 +317,7 @@ int main(int argc, char *argv[])
 
             /* TODO: should probably have seed step tests and stuff like that. */
 
-            test_loop(size, a, r, c, seed);
+            test_loop(size, genfn, a, r, c, seed);
         }
         break;
     }
