@@ -38,15 +38,16 @@ and state to be all zeroes.  It's probably for the best to initialise carry to
 some large random constant and to fill the state bytes from the user-provided
 seed.
 
-If the length is be set to a power of two then it's probably more economical to
-bit-mask the state index rather than compare and reset.
-
-For the eight bit implementation, the carry register need only be 8 bits, and
-for the nine-bit implementation the carry register could share storage with the
-state index.
+[examples.c][] shows some implementations where the state index and
+carry register are overlapped to save memory, and one implementation
+([tinyrand][]()) where the state is so short that the index is omitted
+altogether.
 
 [question]: http://stackoverflow.com/q/16746971/2417578
 [mwc]: http://en.wikipedia.org/wiki/Multiply_with_Carry
 [lcg]: http://en.wikipedia.org/wiki/Linear_congruential_generator
 [dieharder]: http://www.phy.duke.edu/~rgb/General/dieharder.php
 [mt]: http://www.math.sci.hiroshima-u.ac.jp/~m-mat/MT/emt.html
+
+[examples.c]: examples.c
+[tinyrand]: examples.c#tinyrand
