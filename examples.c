@@ -80,8 +80,8 @@ uint16_t basicrand(void)
     rand_state.x[i++] = x;
     rand_state.x[i++] = y;
 
-    if (i == sizeof(rand_state.x))
-        i = 0;
+    i &= 6;
+
     rand_state.c = c;
     rand_state.i = i;
 
@@ -143,7 +143,7 @@ uint16_t fastrand(void)
     uint8_t i;
 
     c = fastrand_state.c;
-    i = (c >> 8) & ~1;
+    i = (c >> 8) & 6;
     c &= 0x1ff;
 
     x = fastrand_state.x[i + 0];
@@ -176,7 +176,7 @@ uint16_t shiftrand(void)
     uint16_t c, t;
 
     c = fastrand_state.c;
-    i = (c >> 8) & ~1;
+    i = (c >> 8) & 6;
     c &= 0x1ff;
 
     x = fastrand_state.x[i + 0];
