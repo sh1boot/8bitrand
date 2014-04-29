@@ -11,6 +11,8 @@ static struct
     /* Could be folded into c if storage is tight */
     uint8_t i;
 
+    uint8_t c1; /* only for *_8z8bit() case */
+
     /* Would normally be compile-time constants */
     uint8_t r;
     uint8_t mul_lo;
@@ -141,5 +143,46 @@ uint32_t rand32_16bit(void)
     uint16_t x, y;
     x = rand16_16bit();
     y = rand16_16bit();
+    return ((uint32_t)y << 16) + x;
+}
+
+
+/* Use this version for multipliers in the form 0xXX00XX.
+ */
+uint8_t rand8_8z8bit(void)
+{
+    int i = rand8.i;
+    uint8_t x = rand8.state[i];
+    uint16_t c0 = rand8.c;
+    uint8_t c1 = rand8.c1;
+    uint32_t t;
+
+    t = MUL8x8(x, rand8.mul_lo) + (uint32_t)c0;
+    t += (uint32_t)(MUL8x8(x, rand8.mul_hi) + c1) << 16;
+    c0 = t >> 8;
+    c1 = t >> 24;
+    x = t & 255;
+    rand8.state[i] = x;
+    rand8.c = c0;
+    rand8.c1 = c1;
+    if (++i >= rand8.r)
+        i = 0;
+    rand8.i = i;
+    return x;
+}
+
+uint16_t rand16_8z8bit(void)
+{
+    uint8_t x, y;
+    x = rand8_8z8bit();
+    y = rand8_8z8bit();
+    return ((uint16_t)y << 8) + x;
+}
+
+uint32_t rand32_8z8bit(void)
+{
+    uint16_t x, y;
+    x = rand16_8z8bit();
+    y = rand16_8z8bit();
     return ((uint32_t)y << 16) + x;
 }

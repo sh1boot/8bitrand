@@ -15,5 +15,8 @@ extern uint32_t rand32_9bit(void);
 extern uint8_t rand8_16bit(void);
 extern uint16_t rand16_16bit(void);
 extern uint32_t rand32_16bit(void);
+extern uint8_t rand8_8z8bit(void);
+extern uint16_t rand16_8z8bit(void);
+extern uint32_t rand32_8z8bit(void);
 
 #endif

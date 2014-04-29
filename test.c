@@ -9,11 +9,11 @@
 #include "examples.h"
 
 static uint32_t ref_state[8];
-static uint16_t ref_a;
-static uint16_t ref_c;
+static uint32_t ref_a;
+static uint32_t ref_c;
 static uint8_t ref_r;
 
-static void ref_init(uint16_t a, uint8_t r, uint16_t c, uint8_t const *seed)
+static void ref_init(uint32_t a, uint8_t r, uint32_t c, uint8_t const *seed)
 {
     int i;
 
@@ -30,8 +30,8 @@ static void ref_init(uint16_t a, uint8_t r, uint16_t c, uint8_t const *seed)
 
 static void ref_memtest(uint8_t const *src, int length, uint64_t count)
 {
-    int a = ref_a;
-    int c = ref_c;
+    unsigned int a = ref_a;
+    unsigned int c = ref_c;
     int r = ref_r;
     int i, j;
 
@@ -71,7 +71,7 @@ static void ref_memtest(uint8_t const *src, int length, uint64_t count)
                 exit(EXIT_FAILURE);
             }
 
-            c= (uint32_t)(t >> bits);
+            c = (uint32_t)(t >> bits);
             ref_state[j >> 2] = x;
         }
     }
@@ -115,7 +115,7 @@ static void generate_loop(unsigned long long size, uint16_t (*genfn)(void))
     }
 }
 
-static void test_loop(unsigned long long size, uint16_t (*genfn)(void), uint16_t a, uint8_t r, uint16_t c, uint8_t const *seed)
+static void test_loop(unsigned long long size, uint16_t (*genfn)(void), uint32_t a, uint8_t r, uint32_t c, uint8_t const *seed)
 {
     unsigned long long count = 0;
 
@@ -142,7 +142,8 @@ static void test_loop(unsigned long long size, uint16_t (*genfn)(void), uint16_t
 
 static void usage(void)
 {
-    printf("8bitrand -w <i> [-r <r>] [-s <xxx>] [-c <c>]  wide multiply\n"
+    printf("8bitrand -W <i> [-r <r>] [-s <xxx>] [-c <c>]  really-wide multiply\n"
+           "8bitrand -w <i> [-r <r>] [-s <xxx>] [-c <c>]  wide multiply\n"
            "8bitrand -n <i> [-r <r>] [-s <xxx>] [-c <c>]  narrow multiply\n"
            "8bitrand -u <i> [-r <r>] [-s <xxx>] [-c <c>]  narrow multiply (unsafe primes)\n"
            "8bitrand -a <a> [-r <r>] [-s <xxx>] [-c <c>]  user-specified multiply\n"
@@ -158,7 +159,7 @@ static void usage(void)
 int main(int argc, char *argv[])
 {
     /* generator config */
-    uint16_t a = 0;
+    uint32_t a = 0;
     uint16_t c = 1;
     uint8_t r = 0;
     uint8_t seed[SEED_MAX] = { 0 };
@@ -169,11 +170,12 @@ int main(int argc, char *argv[])
     enum { MODE_GENERATE, MODE_TEST } mode = MODE_GENERATE;
     tabptr_t const *table = NULL;
     long tab_index = 0;
-    uint8_t a_lo, a_hi;
+    uint8_t a_lo;
+    uint16_t a_hi;
     int optc;
     int i;
 
-    while ((optc = getopt(argc, argv, "e:w:n:u:a:r:s:c:gth")) != -1)
+    while ((optc = getopt(argc, argv, "e:W:w:n:u:a:r:s:c:gth")) != -1)
         switch (optc)
         {
         case 'e':
@@ -189,6 +191,11 @@ int main(int argc, char *argv[])
                 r = impl->r;
             }
             break;
+        case 'W':
+            table = multiplier_table[SPARSE_TABLE];
+            tab_index = strtol(optarg, NULL, 0);
+            break;
+
         case 'w':
             table = multiplier_table[WIDE_TABLE];
             tab_index = strtol(optarg, NULL, 0);
@@ -302,7 +309,13 @@ int main(int argc, char *argv[])
             genfn = &rand16_9bit;
             break;
         default:
-            genfn = &rand16_16bit;
+            if ((a_hi & 0xff) == 0)
+            {
+                rand8_init(a_lo | a_hi, r, c, seed);
+                genfn = &rand16_8z8bit;
+            }
+            else
+                genfn = &rand16_16bit;
             break;
         }
     }
@@ -312,7 +325,7 @@ int main(int argc, char *argv[])
         fprintf(stderr, "%02x", seed[i]);
     fprintf(stderr, "\n");
 
-    if (255 * a_lo + a - 1 > 0xffff)
+    if (255 * a_lo + (a & 0xffff) - 1 > 0xffff)
     {
         fprintf(stderr, "This multiplier could overflow internal arithmetic.\n");
         exit(EXIT_FAILURE);
