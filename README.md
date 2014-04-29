@@ -4,12 +4,14 @@ A [multiply-with-carry][mwc] pseudo-random number generator optimised for 8-bit
 processors with 8-bit hardware multipliers.  Inspired by a [question][] on
 StackOverflow.
 
-Three parameterised implementations -- eight bit, nine bit, and sixteen bit --
-are provided.  The eight and nine bit versions use only a single 8-bit multiply
-operation per eight random bits produced (the the 9-bit version needs an extra
-add, but avoids needing an extra shift).  The sixteen bit version uses two
-multiplies per eight bits of output, but is still slightly constrained in the
-multipliers it's able to use (risk of internal overflow).
+Four parameterised implementations -- eight bit, nine bit, sixteen bit,
+and a sparse 16-bit -- are provided.  The eight and nine bit versions
+use only a single 8-bit multiply operation per eight random bits
+produced (the the 9-bit version needs an extra add, but avoids needing
+an extra shift).  The sixteen bit versions uses two multiplies per eight
+bits of output, but are still slightly constrained in the multipliers
+they're able to use (one risks internal overflow with certain values,
+the other needs a zero-byte between two non-zero bytes).
 
 This is in contrast with a typical [linear congruential generator][lcg] which
 would typically use seven to ten 8-bit multiplies (and more additions) to

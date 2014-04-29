@@ -4,6 +4,8 @@
 
 #define BASIC_MULTIPLIER 0xdc17
 #define BASIC_LAG 8
+#define WIDE_MULTIPLIER 0xfd00c8ul
+#define WIDE_LAG 3
 #define TINY_MULTIPLIER 0xce07
 #define TINY_LAG 2
 #define FAST_MULTIPLIER 0x013b
@@ -22,6 +24,14 @@
         uint16_t t = MUL_8x8(a, x) + c; \
         c = t >> 8; \
         c += MUL_8x8((a >> 8), x); \
+        x = t & 0xff; \
+    } while (0)
+
+#define WIDE_PERMUTE(a, x, c) do { \
+        uint32_t t = MUL_8x8(a, x); \
+        t |= (uint32_t)MUL_8x8((a >> 16), x) << 16; \
+        t += c; \
+        c = t >> 8; \
         x = t & 0xff; \
     } while (0)
 
@@ -60,6 +70,7 @@ static struct
 void basicrand_seed(void const *s, uint8_t l)
 {
     rand_state.c = 0x5500 | hash(rand_state.x, sizeof(rand_state.x), s, l);
+    rand_state.i = 0;
 }
 
 uint16_t basicrand(void)
@@ -84,6 +95,46 @@ uint16_t basicrand(void)
 
     rand_state.c = c;
     rand_state.i = i;
+
+    return (y << 8) | x;
+}
+
+
+/* improved basic generator -- 6 bytes of RAM and two multiplies per byte of output */
+
+static struct
+{
+    uint16_t c0;
+    uint8_t c1;
+    uint8_t x[WIDE_LAG];
+} newrand_state;
+
+void newrand_seed(void const *s, uint8_t l)
+{
+    newrand_state.c0 = 0x5500 | hash(newrand_state.x, sizeof(newrand_state.x), s, l);
+    newrand_state.c1 = 0;
+}
+
+uint16_t newrand(void)
+{
+    uint8_t x, y, z;
+    uint32_t c;
+
+    c = newrand_state.c0 | ((uint32_t)newrand_state.c1 << 16);
+
+    x = newrand_state.x[0];
+    y = newrand_state.x[1];
+    z = newrand_state.x[2];
+
+    WIDE_PERMUTE(WIDE_MULTIPLIER, x, c);
+    WIDE_PERMUTE(WIDE_MULTIPLIER, y, c);
+
+    newrand_state.c0 = (uint16_t)c;
+    newrand_state.c1 = (uint8_t)(c >> 16);
+
+    newrand_state.x[0] = z;
+    newrand_state.x[1] = x;
+    newrand_state.x[2] = y;
 
     return (y << 8) | x;
 }
@@ -200,9 +251,10 @@ uint16_t shiftrand(void)
 }
 
 
-example_ptr_t examples[4] =
+example_ptr_t examples[5] =
 {
     { basicrand_seed, basicrand, BASIC_MULTIPLIER, BASIC_LAG, rand_state.x, &rand_state.c },
+    { newrand_seed, newrand, WIDE_MULTIPLIER, WIDE_LAG, newrand_state.x, &newrand_state.c0 },
     { tinyrand_seed, tinyrand, TINY_MULTIPLIER, TINY_LAG, tinyrand_state.x, &tinyrand_state.c },
     { fastrand_seed, fastrand, FAST_MULTIPLIER, FAST_LAG, fastrand_state.x, &fastrand_state.c },
     { shiftrand_seed, shiftrand, FAST_MULTIPLIER, FAST_LAG, fastrand_state.x, &fastrand_state.c },

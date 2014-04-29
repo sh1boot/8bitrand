@@ -32,12 +32,12 @@ typedef struct
 {
     void (*seed)(void const *seed, uint8_t length);
     uint16_t (*gen)(void);
-    uint16_t a;
+    uint32_t a;
     uint8_t r;
     uint8_t *x;
     uint16_t *c;
 } example_ptr_t;
 
-extern example_ptr_t examples[4];
+extern example_ptr_t examples[5];
 
 #endif
