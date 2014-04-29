@@ -18,10 +18,9 @@ appended to that.
 
 For the nine-bit implementation, parameter sets with around 12 bytes of state
 can almost scrape through all of [dieharder][] randomness tests (contrast with
-[Mersenne Twister][mt]'s 2500 bytes).
-
-The less-efficient sixteen-bit implementation can survive all [dieharder][]'s
-default tests with as few as seven bytes of state.
+[Mersenne Twister][mt]'s 2500 bytes).  The
+less-computationally-efficient sixteen-bit implementation can survive
+all [dieharder][]'s default tests with as few as seven bytes of state.
 
 Provided the MCU has an 8-bit hardware multiplier I expect this code to
 outperform most shift-and-add approaches to random number generation (including
@@ -31,12 +30,11 @@ the 8-bit world.
 
 Real-world tuning
 -----------------
-Any real-world use of this code should hard-code the multiplier and length (you
-shouldn't vary length without re-evaluating the multiplier, anyway) and pick
-the appropriate implementation.  The seed function must never allow both carry
-and state to be all zeroes.  It's probably for the best to initialise carry to
-some large random constant and to fill the state bytes from the user-provided
-seed.
+Any real-world use of this code should hard-code the multiplier and
+length and pick the appropriate implementation.  The seed function must
+never allow both carry and state to be all zeroes.  It's probably for
+the best to initialise carry to some large random constant and to fill
+the state bytes from the user-provided seed.
 
 [examples.c][] shows some implementations where the state index and
 carry register are overlapped to save memory, and one implementation
