@@ -38,6 +38,6 @@ typedef struct
     uint16_t *c;
 } example_ptr_t;
 
-extern example_ptr_t examples[5];
+extern example_ptr_t examples[6];
 
 #endif

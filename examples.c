@@ -10,6 +10,8 @@
 #define TINY_LAG 2
 #define FAST_MULTIPLIER 0x013b
 #define FAST_LAG 6
+#define FAST2_MULTIPLIER 0x010D0001
+#define FAST2_LAG 8
 
 #define MUL_8x8(x, y) ((uint16_t)((uint8_t)(x) * (uint8_t)(y)))
 
@@ -33,6 +35,25 @@
         t += c; \
         c = t >> 8; \
         x = t & 0xff; \
+    } while (0)
+
+#define REALLYWIDE_PERMUTE(a, x, c) do { \
+        uint16_t t = x + c[0]; \
+        uint8_t out = t & 255; \
+        t >>= 8; /* just carry */ \
+        t += c[1]; \
+        c[0] = t & 255; \
+        t >>= 8; /* just carry */ \
+        t += c[2]; \
+        t += MUL_8x8(a >> 16, x); \
+        c[1] = t & 255; \
+        t >>= 8; /* full 16-bit */ \
+        t += c[3] & 1; \
+        t += x; \
+        c[2] = t & 255; \
+        t >>= 8; /* just 1 bit */ \
+        c[3] = t & 1; \
+        x = out; \
     } while (0)
 
 
@@ -251,11 +272,50 @@ uint16_t shiftrand(void)
 }
 
 
-example_ptr_t examples[5] =
+/* another fast generator -- 12 bytes of RAM, one multiply per byte */
+
+static struct
+{
+    uint8_t x[FAST2_LAG];
+    uint8_t c[4];
+} fastrand2_state;
+
+void fastrand2_seed(void const *s, uint8_t l)
+{
+    fastrand2_state.c[0] = hash(fastrand2_state.x, sizeof(fastrand2_state.x), s, l);
+    fastrand2_state.c[1] = 0x55;
+    fastrand2_state.c[2] = 0;
+    fastrand2_state.c[3] = 0;
+}
+
+uint16_t fastrand2(void)
+{
+    uint8_t x, y;
+    uint8_t i;
+
+    i = (fastrand2_state.c[3] >> 1);
+
+    x = fastrand2_state.x[i + 0];
+    y = fastrand2_state.x[i + 1];
+
+    REALLYWIDE_PERMUTE(FAST2_MULTIPLIER, x, fastrand2_state.c);
+    REALLYWIDE_PERMUTE(FAST2_MULTIPLIER, y, fastrand2_state.c);
+
+    fastrand2_state.x[i++] = x;
+    fastrand2_state.x[i++] = y;
+
+    fastrand2_state.c[3] |= (i & 7) << 1;
+
+    return (y << 8) | x;
+}
+
+
+example_ptr_t examples[6] =
 {
     { basicrand_seed, basicrand, BASIC_MULTIPLIER, BASIC_LAG, rand_state.x, &rand_state.c },
     { newrand_seed, newrand, WIDE_MULTIPLIER, WIDE_LAG, newrand_state.x, &newrand_state.c0 },
     { tinyrand_seed, tinyrand, TINY_MULTIPLIER, TINY_LAG, tinyrand_state.x, &tinyrand_state.c },
     { fastrand_seed, fastrand, FAST_MULTIPLIER, FAST_LAG, fastrand_state.x, &fastrand_state.c },
     { shiftrand_seed, shiftrand, FAST_MULTIPLIER, FAST_LAG, fastrand_state.x, &fastrand_state.c },
+    { fastrand2_seed, fastrand2, FAST2_MULTIPLIER, FAST2_LAG, fastrand2_state.x, (void *)fastrand2_state.c },
 };
