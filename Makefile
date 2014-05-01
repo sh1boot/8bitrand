@@ -10,5 +10,11 @@ all: $(TARGETS)
 
 period: period.o tables.o
 
+test.o: test.c examples.h 8bitrand.h tables.h
+
+examples.o: examples.c examples.h
+
+8bitrand.o: 8bitrand.c 8bitrand.h
+
 clean:
 	rm -rf $(TARGETS) *.o
